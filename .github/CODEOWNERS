@@ -1,0 +1,12 @@
+# Remplacez les équipes par les vôtres. Avec "Require review from Code Owners"
+# activé sur main, un humain du bon domaine valide chaque zone sensible,
+# même si l'auteur de la PR est un agent.
+/tests/                 @your-org/qa
+/src/                   @your-org/dev
+/docs/specs/            @your-org/product
+/docs/adr/              @your-org/architecture
+/.github/               @your-org/release
+/ci/                    @your-org/release
+/fastlane/              @your-org/release
+/export_presets.cfg     @your-org/release
+/openclaw/              @your-org/release

@@ -1,0 +1,40 @@
+# Godot 4
+.godot/
+.import/
+*.translation
+.mono/
+
+# Builds & rapports
+build/
+reports/
+
+# Template Gradle Android : régénéré par la CI (ci/scripts/install_android_template.sh)
+android/build/
+android/.build_version
+
+# Addon de test : installé par ci/scripts/install_gdunit4.sh
+addons/gdUnit4/
+
+# Secrets : ne jamais versionner
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+.env
+.env.*
+export_credentials.cfg
+google-play-key*.json
+
+# Ruby / fastlane
+.bundle/
+vendor/bundle/
+fastlane/report.xml
+fastlane/test_output/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

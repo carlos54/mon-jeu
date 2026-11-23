@@ -1,0 +1,51 @@
+name: CI
+
+# TDD : sur une branche feat/** la CI est ROUGE tant que le Dev n'a pas rendu
+# les tests du QA verts. C'est attendu. Seule la CI verte permet de merger sur main
+# (protection de branche : checks requis "role-guard", "quality" et "android-debug").
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feat/**", "fix/**", "test/**", "ci/**"]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  role-guard:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Vérifier le périmètre des rôles
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ci/scripts/path_guard.sh "origin/${BASE_REF}" "${HEAD_SHA}"
+
+  quality:
+    uses: ./.github/workflows/quality.yml
+
+  android-debug:
+    needs: quality
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-android-toolchain
+
+      - name: Export APK debug (test de l'export)
+        run: ci/scripts/export_android.sh debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: build/android/game-debug.apk
+          retention-days: 7

@@ -1,0 +1,105 @@
+default_platform(:android)
+
+PROJECT_NAME = ENV.fetch("IOS_PROJECT_NAME", "MonJeu")
+XCODEPROJ = "build/ios/#{PROJECT_NAME}.xcodeproj"
+
+def asc_api_key
+  app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_content: ENV.fetch("ASC_KEY_P8_B64"),
+    is_key_content_base64: true,
+    in_house: false
+  )
+end
+
+platform :android do
+  desc "Envoie l'AAB sur la piste interne Google Play"
+  lane :deploy_internal do |options|
+    upload_to_play_store(
+      track: "internal",
+      aab: options[:aab] || "build/android/game-release.aab",
+      package_name: ENV.fetch("ANDROID_PACKAGE"),
+      json_key_data: ENV.fetch("PLAY_JSON_KEY"),
+      # Une app jamais publiée exige "draft" (PLAY_RELEASE_STATUS=draft).
+      release_status: ENV.fetch("PLAY_RELEASE_STATUS", "completed"),
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
+  desc "Promeut la piste interne vers la production (déploiement progressif)"
+  lane :promote_production do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      rollout: ENV.fetch("PLAY_ROLLOUT", "0.1"),
+      package_name: ENV.fetch("ANDROID_PACKAGE"),
+      json_key_data: ENV.fetch("PLAY_JSON_KEY"),
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+end
+
+platform :ios do
+  desc "Compile, signe (match) et envoie sur TestFlight"
+  lane :beta do
+    setup_ci
+    api_key = asc_api_key
+    bundle_id = ENV.fetch("IOS_BUNDLE_ID")
+
+    match(
+      type: "appstore",
+      app_identifier: bundle_id,
+      api_key: api_key,
+      readonly: true
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: XCODEPROJ,
+      team_id: ENV.fetch("APPLE_TEAM_ID"),
+      code_sign_identity: "Apple Distribution",
+      profile_name: ENV["sigh_#{bundle_id}_appstore_profile-name"],
+      targets: [PROJECT_NAME]
+    )
+
+    build_app(
+      project: XCODEPROJ,
+      scheme: PROJECT_NAME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "build/ios",
+      output_name: "#{PROJECT_NAME}.ipa",
+      clean: true
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Soumet le build TestFlight à la revue App Store (sans publication auto)"
+  lane :release do
+    upload_to_app_store(
+      api_key: asc_api_key,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      app_version: ENV.fetch("VERSION_NAME"),
+      build_number: ENV.fetch("VERSION_CODE"),
+      submit_for_review: true,
+      automatic_release: false,
+      force: true,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end

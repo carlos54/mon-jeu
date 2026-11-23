@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/ui/level_select/level_select.gd" id="1_select"]
+[ext_resource type="Script" path="res://src/core/safe_area_container.gd" id="2_safe"]
+
+[node name="LevelSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_select")
+
+[node name="SafeArea" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_safe")
+
+[node name="VBox" type="VBoxContainer" parent="SafeArea"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Title" type="Label" parent="SafeArea/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "Niveaux (à venir)"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="SafeArea/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+text = "Retour"

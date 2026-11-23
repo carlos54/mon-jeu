@@ -1,0 +1,7 @@
+# Certificats/profils iOS stockés dans un dépôt Git PRIVÉ, chiffré (MATCH_PASSWORD).
+# La CI utilise match en lecture seule (readonly: true) ; la création initiale
+# des certificats se fait une fois, en local : `bundle exec fastlane match appstore`.
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+type("appstore")
+# Auth HTTPS du dépôt de certificats : MATCH_GIT_BASIC_AUTHORIZATION (base64 "user:token")

@@ -1,0 +1,50 @@
+; Engine configuration file.
+; ATTENTION : Godot réécrit ce fichier à l'ouverture de l'éditeur. Relisez le diff.
+
+config_version=5
+
+[application]
+
+config/name="Mon Jeu"
+config/description="Jeu mobile 2D (Godot 4.x, GDScript typé)"
+run/main_scene="res://src/ui/boot/boot.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0.08, 0.08, 0.1, 1)
+config/icon="res://icon.svg"
+
+[autoload]
+
+; L'ORDRE COMPTE : chaque singleton ne dépend que de ceux qui le précèdent.
+Events="*res://src/autoload/events.gd"
+SaveManager="*res://src/autoload/save_manager.gd"
+SettingsManager="*res://src/autoload/settings_manager.gd"
+AudioManager="*res://src/autoload/audio_manager.gd"
+GameManager="*res://src/autoload/game_manager.gd"
+SceneManager="*res://src/autoload/scene_manager.gd"
+
+[debug]
+
+; 0 = ignorer, 1 = avertir, 2 = erreur. Passez untyped_declaration à 2
+; pour imposer le typage strict (le code fourni est écrit pour le supporter).
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/unused_signal=0
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+; 0 = paysage, 1 = portrait
+window/handheld/orientation=1
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+pointing/emulate_mouse_from_touch=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

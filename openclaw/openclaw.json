@@ -1,0 +1,88 @@
+// Configuration OpenClaw (JSON5) de l'équipe "Mon Jeu".
+// Syntaxe alignée sur la doc OpenClaw 2026.10 (agents.entries). Si votre version
+// utilise l'ancienne forme agents.list[], lancez `openclaw doctor` : il signale
+// les clés inconnues. NE REMPLACEZ PAS votre ~/.openclaw/openclaw.json existant :
+// fusionnez ce bloc (voir openclaw/install.sh).
+//
+// IMPORTANT : tools.allow/deny et sandbox sont des garde-fous "souples". Les
+// garanties DURES sont côté GitHub : un token distinct par agent, branche main
+// protégée, CODEOWNERS, ci/scripts/path_guard.sh et environnements à approbation.
+{
+  agents: {
+    ownership: "explicit",
+    defaults: {
+      systemAgent: { agentId: "producer" },
+      // Sous-agents : modèle économique conseillé (le principal reste plus fort).
+      // subagents: { model: "<votre-modèle-économique>" },
+    },
+    entries: {
+      producer: {
+        name: "Producer",
+        workspace: "~/.openclaw/workspace-producer",
+        agentDir: "~/.openclaw/agents/producer/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        // Lecture + exec (gh en lecture seule). Aucune écriture de fichier.
+        tools: {
+          allow: ["read", "exec"],
+          deny: ["write", "edit", "apply_patch"],
+        },
+        subagents: {
+          allowAgents: ["analyst", "architect", "qa", "dev", "release"],
+        },
+      },
+
+      analyst: {
+        name: "Analyste / PO",
+        workspace: "~/.openclaw/workspace-analyst",
+        agentDir: "~/.openclaw/agents/analyst/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: { allow: ["read", "write", "edit", "exec"] },
+      },
+
+      architect: {
+        name: "Architecte",
+        workspace: "~/.openclaw/workspace-architect",
+        agentDir: "~/.openclaw/agents/architect/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: { allow: ["read", "write", "edit", "exec"] },
+      },
+
+      qa: {
+        name: "QA / Test designer",
+        workspace: "~/.openclaw/workspace-qa",
+        agentDir: "~/.openclaw/agents/qa/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: { allow: ["read", "write", "edit", "apply_patch", "exec"] },
+      },
+
+      dev: {
+        name: "Dev mobile (Godot)",
+        workspace: "~/.openclaw/workspace-dev",
+        agentDir: "~/.openclaw/agents/dev/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: { allow: ["read", "write", "edit", "apply_patch", "exec"] },
+      },
+
+      release: {
+        name: "Release / DevOps",
+        workspace: "~/.openclaw/workspace-release",
+        agentDir: "~/.openclaw/agents/release/agent",
+        sandbox: { mode: "all", scope: "agent" },
+        tools: { allow: ["read", "write", "edit", "apply_patch", "exec"] },
+      },
+    },
+  },
+
+  // Communication entre agents (handoffs). Liste explicite des participants.
+  tools: {
+    agentToAgent: {
+      allow: ["producer", "analyst", "architect", "qa", "dev", "release"],
+    },
+  },
+
+  // Point d'entrée humain : seul le Producer reçoit les messages.
+  // Décommentez et adaptez le canal à celui que vous avez configuré.
+  bindings: [
+    // { agentId: "producer", match: { channel: "telegram", accountId: "*" } },
+  ],
+}

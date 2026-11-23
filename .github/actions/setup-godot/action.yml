@@ -1,0 +1,27 @@
+name: Setup Godot
+description: Installe Godot (et optionnellement les export templates) à la version figée dans ci/versions.env.
+
+inputs:
+  templates:
+    description: "Installer aussi les export templates (true/false)"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Charger les versions figées
+      shell: bash
+      run: grep -E '^[A-Z0-9_]+=' ci/versions.env >> "$GITHUB_ENV"
+
+    - name: Cache des téléchargements Godot
+      uses: actions/cache@v4
+      with:
+        path: ~/godot-cache
+        key: godot-${{ runner.os }}-${{ hashFiles('ci/versions.env') }}
+
+    - name: Installer Godot
+      shell: bash
+      env:
+        WITH_TEMPLATES: ${{ inputs.templates }}
+      run: ci/scripts/install_godot.sh "$WITH_TEMPLATES"

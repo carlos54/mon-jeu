@@ -1,0 +1,52 @@
+name: Quality
+
+# Workflow réutilisable : lint + tests. Appelé par ci.yml et release.yml.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer gdtoolkit
+        run: pip install "gdtoolkit==4.*"
+
+      - name: gdlint
+        run: gdlint src tests
+
+      - name: gdformat (vérification)
+        run: gdformat --check src tests
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Godot
+        uses: ./.github/actions/setup-godot
+
+      - name: Charger les versions figées
+        run: grep -E '^[A-Z0-9_]+=' ci/versions.env >> "$GITHUB_ENV"
+
+      - name: Installer gdUnit4
+        run: ci/scripts/install_gdunit4.sh
+
+      - name: Tests (gdUnit4, headless)
+        run: ci/scripts/run_tests.sh
+
+      - name: Publier les rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: reports/
+          if-no-files-found: ignore
